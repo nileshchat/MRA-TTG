@@ -458,6 +458,14 @@ namespace mra {
       return *this;
     }
 
+    /// Scale by scalar
+    /// Device: assumes this operation is called by all threads in a block, synchronizes
+    /// Host: assumes this operation is called by a single CPU thread
+    SCOPE TensorView& operator+=(const value_type& value) {
+      foreach_idx(*this, [&](auto... args){ this->operator()(args...) += value; });
+      return *this;
+    }
+
     /// Copy into patch
     /// Device: assumes this operation is called by all threads in a block, synchronizes
     /// Host: assumes this operation is called by a single CPU thread
