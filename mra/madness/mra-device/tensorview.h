@@ -466,6 +466,12 @@ namespace mra {
       return *this;
     }
 
+  
+    SCOPE TensorView& operator+=(const TensorView<T, NDIM>& other) {
+      foreach_idx(*this, [&](auto... args){ this->operator()(args...) += other(args...); });
+      return *this;
+    }
+
     /// Copy into patch
     /// Device: assumes this operation is called by all threads in a block, synchronizes
     /// Host: assumes this operation is called by a single CPU thread
