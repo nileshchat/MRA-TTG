@@ -228,6 +228,18 @@ std::array<Slice, NDIM> get_child_slice(Key<NDIM> key, std::size_t K, int child)
   return slices;
 }
 
+template <typename T, Dimension NDIM>
+SCOPE void add_coeffs(
+  const T* n1,
+  const T* n2,
+  std::size_t K) 
+{    
+  coeffs1 = TensorView<T, NDIM>(n1, K);
+  coeffs2 = TensorView<T, NDIM>(n2, K);
+
+  coeffs2 += coeffs1;
+}
+
 template<typename Fn, typename T, Dimension NDIM>
 GLOBALSCOPE void fcoeffs_kernel1(
   const Domain<NDIM>& D,
