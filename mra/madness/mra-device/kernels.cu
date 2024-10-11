@@ -233,7 +233,8 @@ SCOPE void add_coeffs(
   const T* n1,
   const T* n2,
   std::size_t K) 
-{    
+{ 
+  SHARED TensorView<T, NDIM> coeffs1, coeffs2; 
   coeffs1 = TensorView<T, NDIM>(n1, K);
   coeffs2 = TensorView<T, NDIM>(n2, K);
 
