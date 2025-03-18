@@ -3,6 +3,7 @@
 
 #include <cstdlib>
 #include <algorithm>
+#include <iostream>
 
 #if defined(MRA_ENABLE_CUDA)
 #include <cuda.h>
@@ -154,7 +155,16 @@ namespace mra {
   }
 
   constexpr inline Dim3 max_thread_dims(int K) {
-    return Dim3(K, K, std::min(((MAX_THREADS_PER_BLOCK) / (K*K)), K));
+#ifndef MRA_ENABLE_HOST
+    int x = ((K+31)/32)*32;
+    //int x = K;
+    int y = std::min((MAX_THREADS_PER_BLOCK)/x, K*K);
+    int z = 1;
+    //int z = std::min(((MAX_THREADS_PER_BLOCK) / (x*y)), K);
+    return Dim3(x, y, z);
+#else
+    return Dim3(1, 1, 1);
+#endif
   }
 
   constexpr inline int max_threads(int K) {
