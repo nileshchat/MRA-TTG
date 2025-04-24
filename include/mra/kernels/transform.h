@@ -14,7 +14,7 @@ namespace mra {
   SCOPE void transform(
     const TensorView<T, NDIM>& t,
     const TensorView<T, 2>& c,
-    TensorView<T, NDIM>& result,
+    TensorView<T, NDIM>& result, /* make arguments universal references*/
     T* workspace) {
     const T* pc = c.data();
     T *t0=workspace, *t1=result.data();
