@@ -461,6 +461,128 @@ namespace mra {
       return s;
     }
 
+    /* for Non-Standard form of functions and operators */
+    template <typename T, Dimension NDIM>
+    class FunctionsNodeNS : public ttg::TTValue<FunctionsNodeNS<T, NDIM>>,
+                                       public detail::FunctionNodeBase<T, NDIM> {
+      public:
+        using key_type = Key<NDIM>;
+        using value_type = T;
+        using tensor_type = Tensor<T,NDIM+1>;
+        using view_type   = TensorView<T, NDIM>;
+        using const_view_type   = TensorView<const T, NDIM>;
+        static constexpr bool is_function_node = true;
+        using norm_tensor_type = Tensor<T, 1>;
+        using norm_tensor_view_type = TensorView<const T, NDIM>;
+        using base_type = detail::FunctionNodeBase<T, NDIM>;
+        constexpr static Dimension ndim() { return NDIM; }
+
+      private:
+        struct function_metadata {
+          T sum = 0.0;
+          bool is_leaf = false;
+          std::array<bool, Key<NDIM>::num_children()> is_child_leaf = { false };
+          template<typename Archive>
+          void serialize(Archive& ar){
+            ar & sum;
+            ar & is_leaf;
+            ar & is_child_leaf;
+          }
+        };
+
+        std::vector<function_metadata> m_metadata;
+
+      public:
+        FunctionsNodeNS() = default;
+
+        /* constructs a node with metadata for N functions and all coefficients zero */
+        FunctionsNodeNS(const Key<NDIM>& key, size_type N)
+        : base_type(key, N)
+        , m_metadata(N)
+        { }
+
+        FunctionsNodeNS(const Key<NDIM>& key, size_type N, size_type K, ttg::scope scope = ttg::scope::SyncIn)
+        : base_type(key, N, K, scope)
+        , m_metadata(N)
+        { }
+
+
+        FunctionsNodeNS(FunctionsReconstructedNode&& other) = default;
+        FunctionsNodeNS(const FunctionsReconstructedNode& other) = delete;
+
+        FunctionsNodeNS& operator=(FunctionsNodeNS&& other) = default;
+        FunctionsNodeNS& operator=(const FunctionsNodeNS& other) = delete;
+
+        /**
+         * Allocate space for coefficients using K.
+         * The node must be empty before and will not be empty afterwards.
+         */
+        void allocate(size_type K, ttg::scope scope = ttg::scope::SyncIn) {
+          base_type::allocate(K, scope);
+        }
+
+        bool has_children(size_type i) const {
+          return !m_metadata[i].is_leaf;
+        }
+
+        bool any_have_children() const {
+          bool result = false;
+          for (size_type i = 0; i < m_metadata.size(); ++i) {
+            result |= has_children(i);
+          }
+          return result;
+        }
+
+        void set_all_leaf(bool val) {
+          for (auto& data : m_metadata) {
+            data.is_leaf = val;
+          }
+        }
+
+        bool is_all_leaf() const {
+          bool all_leaf = true;
+          for (auto& data : m_metadata) {
+            all_leaf &= data.is_leaf;
+          }
+          return all_leaf;
+        }
+
+        bool& is_leaf(size_type i) {
+          return m_metadata[i].is_leaf;
+        }
+
+        bool is_leaf(size_type i) const {
+          return m_metadata[i].is_leaf;
+        }
+
+        bool& is_child_leaf(size_type i, size_type child) {
+          return m_metadata[i].is_child_leaf[child];
+        }
+
+        bool is_leaf(size_type i, size_type child) const {
+          return m_metadata[i].is_child_leaf[child];
+        }
+
+        T& sum(size_type i) {
+          return m_metadata[i].sum;
+        }
+
+        T sum(size_type i) const {
+          return m_metadata[i].sum;
+        }
+
+        template <typename Archive>
+        void serialize(Archive& ar) {
+          base_type::serialize(ar);
+          ar& this->m_metadata;
+        }
+
+        template <typename Archive>
+        void serialize(Archive& ar, const unsigned int) {
+          serialize(ar);
+        }
+    };
+
 
 
 } // namespace mra
