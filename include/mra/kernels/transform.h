@@ -10,11 +10,11 @@
 #include "mra/tensor/tensorview.h"
 namespace mra {
 
-  template <Dimension NDIM, typename T>
+  template < template < typename, Dimension> class TensorView, Dimension NDIM, typename T>
   SCOPE void transform(
-    const TensorView<T, NDIM>& t,
-    const TensorView<T, 2>& c,
-    TensorView<T, NDIM>& result,
+    const TensorView<T, NDIM>&& t,
+    const TensorView<T, 2>&& c,
+    TensorView<T, NDIM>&& result, /* make arguments universal references*/
     T* workspace) {
     const T* pc = c.data();
     T *t0=workspace, *t1=result.data();
@@ -30,12 +30,12 @@ namespace mra {
     /* no need to synchronize here, mTxmq synchronizes */
   }
 
-  template <typename T, Dimension NDIM>
+  template <template<typename, Dimension> class TensorView, typename T, Dimension NDIM>
   SCOPE void transform_dir(
-    const TensorView<T, NDIM>& node,
-    const TensorView<T, 2>& op,
-    TensorView<T, NDIM>& tmp_result,
-    TensorView<T, NDIM>& result,
+    const TensorView<T, NDIM>&& node,
+    const TensorView<T, 2>&& op,
+    TensorView<T, NDIM>&& tmp_result,
+    TensorView<T, NDIM>&& result,
     size_type axis) {
       if (axis == 0){
         detail::inner(op, node, result, 0, axis);
@@ -49,9 +49,9 @@ namespace mra {
       }
     }
 
-  template <typename T, Dimension NDIM, std::size_t ARRDIM = NDIM>
+  template <template<typename, Dimension> class TensorView, typename T, Dimension NDIM, std::size_t ARRDIM = NDIM>
   SCOPE void general_transform(
-    const TensorView<T, NDIM>& t,
+    const TensorView<T, NDIM>&& t,
     const std::array<TensorView<T, 2>, ARRDIM>& c,
     TensorView<T, NDIM>& result)
     {
