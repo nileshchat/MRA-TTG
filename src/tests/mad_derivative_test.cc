@@ -32,6 +32,18 @@ static T du_dx_exact(const coordT &pt) {
 }
 
 template <typename T>
+static T du_dy_exact(const coordT &pt) {
+  auto fac = std::pow(T(2.0*10/std::numbers::pi),T(0.25*3)); // normalization factor
+  return -20*fac*pt[1]*(std::exp(-10*pt[0]*pt[0]) * std::exp(-10*pt[1]*pt[1]) * std::exp(-10*pt[2]*pt[2]));
+}
+
+template <typename T>
+static T du_dz_exact(const coordT &pt) {
+  auto fac = std::pow(T(2.0*10/std::numbers::pi),T(0.25*3)); // normalization factor
+  return -20*fac*pt[2]*(std::exp(-10*pt[0]*pt[0]) * std::exp(-10*pt[1]*pt[1]) * std::exp(-10*pt[2]*pt[2]));
+}
+
+template <typename T>
 static T xbdy_dirichlet(const coordT &pt) {
   return (std::exp(-10*pt[0]*pt[0]) * std::exp(-10*pt[1]*pt[1]) * std::exp(-10*pt[2]*pt[2]));
 }
