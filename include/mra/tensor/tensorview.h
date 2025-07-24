@@ -427,9 +427,9 @@ namespace mra {
     template<typename... Dims>
     requires(!std::is_const_v<std::remove_reference_t<T>> && sizeof...(Dims) == NDIM && (std::is_integral_v<Dims>&&...))
     SCOPE value_type& operator()(Dims... idxs) {
-      std::vector<size_type> indices = {static_cast<size_type>(idxs)...};
-      for (size_type i = 0; i < sizeof...(Dims); ++i) {
-        if (indices[i] < 0 || indices[i] >= dim(i)) {
+      std::array<size_type, sizeof...(Dims)> indices = {static_cast<size_type>(idxs)...};
+      for (size_type i = 0; i < indices.size(); ++i) {
+        if (indices[i] >= dim(i)) {
           THROW("TensorView: index out of bounds");
         }
       }
@@ -442,9 +442,9 @@ namespace mra {
     requires(sizeof...(Dims) == NDIM && (std::is_integral_v<Dims>&&...))
     SCOPE const_value_type operator()(Dims... idxs) const {
       // let's hope the compiler will hoist this out of loops
-      std::vector<size_type> indices = {static_cast<size_type>(idxs)...};
-      for (size_type i = 0; i < sizeof...(Dims); ++i) {
-        if (indices[i] < 0 || indices[i] >= dim(i)) {
+      std::array<size_type, sizeof...(Dims)> indices = {static_cast<size_type>(idxs)...};
+      for (size_type i = 0; i < indices.size(); ++i) {
+        if (indices[i] >= dim(i)) {
           THROW("TensorView: index out of bounds");
         }
       }
@@ -461,9 +461,9 @@ namespace mra {
     template<typename... Dims>
     requires(sizeof...(Dims) < NDIM && (std::is_integral_v<Dims>&&...))
     SCOPE TensorView<T, NDIM-sizeof...(Dims)> operator()(Dims... idxs) const {
-      std::vector<size_type> indices = {static_cast<size_type>(idxs)...};
-      for (size_type i = 0; i < sizeof...(Dims); ++i) {
-        if (indices[i] < 0 || indices[i] >= dim(i)) {
+      std::array<size_type, sizeof...(Dims)> indices = {static_cast<size_type>(idxs)...};
+      for (size_type i = 0; i < indices.size(); ++i) {
+        if (indices[i] >= dim(i)) {
           THROW("TensorView: index out of bounds");
         }
       }
