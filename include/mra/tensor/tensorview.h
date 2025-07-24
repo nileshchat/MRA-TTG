@@ -427,6 +427,12 @@ namespace mra {
     template<typename... Dims>
     requires(!std::is_const_v<std::remove_reference_t<T>> && sizeof...(Dims) == NDIM && (std::is_integral_v<Dims>&&...))
     SCOPE value_type& operator()(Dims... idxs) {
+      std::vector<size_type> indices = {static_cast<size_type>(idxs)...};
+      for (size_type i = 0; i < sizeof...(Dims); ++i) {
+        if (indices[i] < 0 || indices[i] >= dim(i)) {
+          THROW("TensorView: index out of bounds");
+        }
+      }
       if (m_ptr == nullptr) THROW("TensorView: non-const call with nullptr");
       return m_ptr[offset(std::forward<Dims>(idxs)...)];
     }
@@ -436,6 +442,12 @@ namespace mra {
     requires(sizeof...(Dims) == NDIM && (std::is_integral_v<Dims>&&...))
     SCOPE const_value_type operator()(Dims... idxs) const {
       // let's hope the compiler will hoist this out of loops
+      std::vector<size_type> indices = {static_cast<size_type>(idxs)...};
+      for (size_type i = 0; i < sizeof...(Dims); ++i) {
+        if (indices[i] < 0 || indices[i] >= dim(i)) {
+          THROW("TensorView: index out of bounds");
+        }
+      }
       if (m_ptr == nullptr) {
         return T(0);
       } else {
@@ -449,6 +461,13 @@ namespace mra {
     template<typename... Dims>
     requires(sizeof...(Dims) < NDIM && (std::is_integral_v<Dims>&&...))
     SCOPE TensorView<T, NDIM-sizeof...(Dims)> operator()(Dims... idxs) const {
+      std::vector<size_type> indices = {static_cast<size_type>(idxs)...};
+      for (size_type i = 0; i < sizeof...(Dims); ++i) {
+        if (indices[i] < 0 || indices[i] >= dim(i)) {
+          THROW("TensorView: index out of bounds");
+        }
+      }
+
       constexpr const Dimension noffs = sizeof...(Dims);
       constexpr const Dimension ndim = NDIM-noffs;
       size_type offset = offset_impl<0>(std::forward<Dims>(idxs)...);
