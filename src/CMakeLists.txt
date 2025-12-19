@@ -6,7 +6,8 @@ target_link_libraries(libmra-base-parsec INTERFACE MADworld ttg-parsec $<$<TARGE
 target_compile_definitions(libmra-base-parsec INTERFACE TTG_USE_PARSEC=1)
 
 #define a target for the host
-add_library(libmra-host-parsec OBJECT gl.cc twoscale.cc kernels/compress.cc kernels/reconstruct.cc kernels/multiply.cc kernels/derivative.cc)
+add_library(libmra-host-parsec OBJECT gl.cc twoscale.cc kernels/compress.cc kernels/reconstruct.cc kernels/multiply.cc kernels/derivative.cc kernels/convolution.cc)
+
 target_link_libraries(libmra-host-parsec PUBLIC libmra-base-parsec)
 target_compile_definitions(libmra-host-parsec PUBLIC MRA_ENABLE_HOST=1)
 
@@ -23,6 +24,10 @@ add_executable(mra-derivative-host-parsec
                examples/derivative/test_derivative.cc)
 target_link_libraries(mra-derivative-host-parsec PUBLIC libmra-host-parsec)
 
+add_executable(mra-convolution-host-parsec
+               autocorr.cc examples/convolution/test_convolution.cc)
+target_link_libraries(mra-convolution-host-parsec PUBLIC libmra-host-parsec)
+
 add_executable(mra-unit-host-parsec
                examples/unit/test_unit.cc)
 target_link_libraries(mra-unit-host-parsec PUBLIC libmra-host-parsec)
@@ -31,6 +36,14 @@ target_link_libraries(mra-unit-host-parsec PUBLIC libmra-host-parsec)
 add_executable(mra-mad-deriv-host-parsec
                tests/mad_derivative_test.cc)
 target_link_libraries(mra-mad-deriv-host-parsec PUBLIC MADworld MADtensor MADmra libmra-host-parsec)
+
+add_executable(mra-mad-conv-host-parsec
+               tests/mad_convolution_test.cc autocorr.cc)
+target_link_libraries(mra-mad-conv-host-parsec PUBLIC MADworld MADtensor MADmra libmra-host-parsec)
+
+add_executable(mra-mad-debug-host-parsec
+               tests/mad_conv.cc autocorr.cc)
+target_link_libraries(mra-mad-debug-host-parsec PUBLIC MADworld MADtensor MADmra libmra-host-parsec)
 
 add_executable(mra-cycledimtest tests/cycledim_test.cc)
 target_link_libraries(mra-cycledimtest PUBLIC libmra-host-parsec)
@@ -74,7 +87,8 @@ if (HAVE_CUDA)
                                                $<$<TARGET_EXISTS:tiledarray>:tiledarray>
                                                $<$<TARGET_EXISTS:mathdx::cublasdx>:mathdx::cublasdx>)
 
-  add_library(libmra-cuda-parsec OBJECT gl.cc twoscale.cc kernels/compress.cu kernels/reconstruct.cu kernels/multiply.cu kernels/derivative.cu)
+  add_library(libmra-cuda-parsec OBJECT gl.cc twoscale.cc kernels/compress.cu kernels/reconstruct.cu kernels/multiply.cu kernels/derivative.cu kernels/convolution.cu)
+
   target_link_libraries(libmra-cuda-parsec PUBLIC libmra-cuda-base-parsec)
 
   add_executable(mra-pcr-device-cuda-parsec examples/pcr/test_pcr.cu)
@@ -82,6 +96,9 @@ if (HAVE_CUDA)
 
   add_executable(mra-derivative-device-cuda-parsec examples/derivative/test_derivative.cu)
   target_link_libraries(mra-derivative-device-cuda-parsec PUBLIC libmra-cuda-parsec)
+
+  add_executable(mra-convolution-device-cuda-parsec autocorr.cc examples/convolution/test_convolution.cu)
+  target_link_libraries(mra-convolution-device-cuda-parsec PUBLIC libmra-cuda-parsec)
 
   add_executable(mra-unit-device-cuda-parsec examples/unit/test_unit.cu)
   target_link_libraries(mra-unit-device-cuda-parsec PUBLIC libmra-cuda-parsec)
@@ -110,7 +127,9 @@ endif (HAVE_CUDA)
 if (HAVE_HIP)
 
   # define a target for HIP
-  add_library(libmra-hip-parsec OBJECT gl.cc twoscale.cc kernels/compress.hip kernels/reconstruct.hip kernels/multiply.hip kernels/derivative.hip)
+
+  add_library(libmra-hip-parsec OBJECT gl.cc twoscale.cc kernels/compress.hip kernels/reconstruct.hip kernels/multiply.hip kernels/derivative.hip kernels/convolution.hip)
+
   target_compile_definitions(libmra-hip-parsec PUBLIC MRA_ENABLE_HIP=1)
   target_link_libraries(libmra-hip-parsec PUBLIC libmra-base-parsec
                                               $<$<TARGET_EXISTS:tiledarray>:tiledarray>
@@ -121,6 +140,9 @@ if (HAVE_HIP)
 
   add_executable(mra-derivative-device-hip-parsec examples/derivative/test_derivative.hip)
   target_link_libraries(mra-derivative-device-hip-parsec PUBLIC libmra-hip-parsec)
+
+  add_executable(mra-convolution-device-hip-parsec autocorr.cc examples/convolution/test_convolution.hip)
+  target_link_libraries(mra-convolution-device-hip-parsec PUBLIC libmra-hip-parsec)
 
   add_executable(mra-unit-device-hip-parsec examples/unit/test_unit.hip)
   target_link_libraries(mra-unit-device-hip-parsec PUBLIC libmra-hip-parsec)

@@ -332,6 +332,7 @@ namespace mra {
 
       private:
         std::vector<std::array<bool, Key<NDIM>::num_children()>> m_is_child_leafs; //< True if that child is leaf on tree
+        bool m_ns = false; //< True if node is non-standard
 
       public:
         /* constructs an empty node without key information,
@@ -389,12 +390,24 @@ namespace mra {
           return m_is_child_leafs[i][child];
         }
 
+        void set_child_leaf(size_type i, size_type child, bool arg = true) {
+          m_is_child_leafs[i][child] = arg;
+        }
+
         void set_all_child_leafs(bool arg = true) {
           for (auto& node : m_is_child_leafs) {
             for (auto& c : node) {
               c = arg;
             }
           }
+        }
+
+        void set_ns(bool arg = true) {
+          m_ns = arg;
+        }
+
+        bool is_ns() const {
+          return m_ns;
         }
 
         bool is_all_child_leaf() const {
@@ -411,6 +424,7 @@ namespace mra {
         void serialize(Archive& ar) {
           base_type::serialize(ar);
           ar& this->m_is_child_leafs;
+          ar& this->m_ns;
         }
 
         template <typename Archive>
